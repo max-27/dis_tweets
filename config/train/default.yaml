@@ -1,0 +1,16 @@
+# reproducibility
+deterministic: False
+random_seed: 42
+
+# ???
+fp16: False
+
+training:
+  epochs: 1
+  warmup_steps: 0
+  max_steps: 10
+evaluation:
+  steps: 10
+  evaluation_strategy: steps
+
+max_grad_norm: 1

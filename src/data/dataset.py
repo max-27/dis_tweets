@@ -30,8 +30,8 @@ class TwitterDataset(Dataset):
             return_tensors="pt",
         )
         return {"sample": sample,
-                "target": target,
-                "input_id": encoding["input_ids"].flatten(),
+                "labels": target,
+                "input_ids": encoding["input_ids"].flatten(),
                 "attention_mask": encoding["attention_mask"].flatten(),
                 }
 

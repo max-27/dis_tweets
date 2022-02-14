@@ -1,0 +1,9 @@
+save_steps: 5
+
+wandb:
+  project: disaster-tweets
+  group: tests
+  name: test-run
+  tags: test
+
+wandb_key_api: ""

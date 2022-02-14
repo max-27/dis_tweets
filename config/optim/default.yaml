@@ -1,0 +1,9 @@
+optimizer:
+  lr: 5e-5
+  adam_epsilon: 1e-8
+
+  lr_scheduler:
+    warmup_steps: 0
+
+loss:
+  weight_decay: 0

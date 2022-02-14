@@ -1,4 +1,5 @@
-"""https://www.kaggle.com/sudalairajkumar/getting-started-with-text-preprocessing"""
+# https://www.kaggle.com/sudalairajkumar/getting-started-with-text-preprocessing
+# https://towardsdatascience.com/cleaning-preprocessing-text-data-by-building-nlp-pipeline-853148add68a
 import pandas as pd
 import string
 from collections import Counter
@@ -24,13 +25,17 @@ class Preprocessor:
 
     def save(self, stage: str):
         df = pd.read_csv(os.path.join(get_root_path(), "data", "raw", stage+".csv"))
-        self._preprocess(df, stage)
+        if stage == "train":
+            self._preprocess(df)
+        elif stage == "test":
+            self._preprocess_test(df)
+        else:
+            return
         torch.save(self.df_out, os.path.join(get_root_path(), "data", "processed", stage+".pt"))
 
-    def _preprocess(self, df: pd.DataFrame, stage: str):
+    def _preprocess(self, df: pd.DataFrame):
         df_processed = pd.DataFrame()
-        if stage == "train":
-            df_processed["target"] = df["target"]
+        df_processed["target"] = df["target"]
         df_processed["clean_text"] = df["text"].str.lower()
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_punctuation(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_html(text))
@@ -56,6 +61,22 @@ class Preprocessor:
         df_processed["clean_text"] = df_processed["clean_text"].apply(
             lambda text: self.lem_words(text, lemmatizer, wordnet_map))
         self.df_out = df_processed[df_processed["clean_text"].map(len) > 0]
+
+    def _preprocess_test(self, df: pd.DataFrame):
+        df_processed = pd.DataFrame()
+        df_processed["clean_text"] = df["text"].str.lower()
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_punctuation(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_html(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_digits(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_urls(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoticons(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoji(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_special_characters(text))
+        lemmatizer = WordNetLemmatizer()
+        wordnet_map = {"N": wordnet.NOUN, "V": wordnet.VERB, "J": wordnet.ADJ, "R": wordnet.ADV}
+        df_processed["clean_text"] = df_processed["clean_text"].apply(
+            lambda text: self.lem_words(text, lemmatizer, wordnet_map))
+        self.df_out = df_processed
 
     def remove_punctuation(self, text: str):
         return text.translate(str.maketrans('', '', string.punctuation))
@@ -132,4 +153,4 @@ class Preprocessor:
 
 if __name__ == "__main__":
     pre = Preprocessor()
-    pre.save("train")
+    pre.save("test")
