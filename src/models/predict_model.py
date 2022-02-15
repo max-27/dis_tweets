@@ -7,6 +7,8 @@ import os
 import numpy as np
 from src.utils import get_root_path
 
+ROOT_DIR = get_root_path()
+DATA_DIR = os.path.join(ROOT_DIR, "data", "processed")
 
 
 def test(model_path: str):
@@ -26,3 +28,8 @@ def test(model_path: str):
     out["id"] = ids["id"]
     save_dir = os.path.join(get_root_path(), "reports", "submissions", "test_pred.csv")
     out.to_csv(save_dir, index=False)
+
+
+if __name__ == "__main__":
+    model_dir = os.path.join(ROOT_DIR, "models", "checkpoint-10")
+    test(model_dir)
