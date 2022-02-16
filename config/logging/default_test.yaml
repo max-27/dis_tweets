@@ -8,4 +8,5 @@ wandb:
   name: test-run
   tags: test
 
-wandb_key_api: ""
+wandb_key_api: ""  # DO NOT paste the key directly in here!
+

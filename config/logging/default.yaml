@@ -1,0 +1,11 @@
+save_steps: 10
+save_dir: ${now:%Y-%m-%d}/${now:%H-%M-%S}
+logging_steps: 500
+
+wandb:
+  project: disaster-tweets
+  group: sweeps
+  name: initial_sweep
+  tags: initial_sweep
+
+wandb_key_api: ""  # DO NOT paste the key directly in here!
