@@ -5,7 +5,7 @@ from src.data.dataset import TwitterDataset
 import torch
 import os
 import numpy as np
-from src.utils import get_root_path
+from src.util import get_root_path
 
 ROOT_DIR = get_root_path()
 DATA_DIR = os.path.join(ROOT_DIR, "data", "processed")

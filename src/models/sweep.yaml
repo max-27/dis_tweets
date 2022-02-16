@@ -1,0 +1,27 @@
+program: train_model.py
+method: random
+metric:
+  goal: maximize
+  name: "eval/accuracy"
+
+parameters:
+  train.training.epochs:
+    values: [1, 5, 7, 10]
+  train.training.max_steps:
+    values: [-1]
+  train.training.warmup_steps:
+    values: [10, 50, 100]
+  optim.optimizer.lr:
+    distribution: uniform
+    min: 5e-6
+    max: 5e-3
+
+early_terminate:
+  type: hyperband
+  min_iter: 500  # same as eval_steps
+
+command:
+    - ${env}
+    - ${interpreter}
+    - ${program}
+    - ${args_no_hyphens}

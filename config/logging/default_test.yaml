@@ -1,4 +1,6 @@
-save_steps: 5
+save_steps: 10
+save_dir: ${now:%Y-%m-%d}/${now:%H-%M-%S}
+logging_steps: 500
 
 wandb:
   project: disaster-tweets

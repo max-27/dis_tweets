@@ -12,7 +12,7 @@ from src.data.encoding_dict import EMOTICONS, UNICODE_EMO, CHAT_WORDS
 from spellchecker import SpellChecker
 from bs4 import BeautifulSoup
 import torch
-from src.utils import get_root_path
+from src.util import get_root_path
 import os
 
 

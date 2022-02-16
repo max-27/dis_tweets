@@ -1,7 +1,7 @@
 import logging
 import pandas as pd
 import os
-from src.utils import get_root_path
+from src.util import get_root_path
 
 
 def main(input_filepath, output_filepath=None, columns=None):

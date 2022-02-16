@@ -2,7 +2,7 @@
 deterministic: False
 random_seed: 42
 
-# ???
+# precision
 fp16: False
 
 training:
@@ -10,7 +10,7 @@ training:
   warmup_steps: 0
   max_steps: 10
 evaluation:
-  steps: 10
+  steps: 10  # should be the same as save_steps in logging
   evaluation_strategy: steps
 
 max_grad_norm: 1

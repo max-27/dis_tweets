@@ -1,1 +1,3 @@
 num_classes: 2
+load_best_model: True
+metric_best_model: accuracy
