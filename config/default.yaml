@@ -8,7 +8,7 @@ defaults:
   - _self_
   - data: default
   - hydra: default
-  - logging: default
+  - logging: default_test
   - model: default
   - optim: default
-  - train: short_run
+  - train: default_test

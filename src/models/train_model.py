@@ -10,7 +10,6 @@ from src.util import get_root_path
 import logging
 import wandb
 import hydra
-import omegaconf
 from omegaconf import DictConfig
 from git import Repo
 
@@ -20,6 +19,7 @@ MODEL_DIR = os.path.join(ROOT_DIR, "models")
 logger = logging.getLogger(__name__)
 wandb.login()
 repo = Repo(ROOT_DIR, search_parent_directories=True)
+os.environ['HYDRA_FULL_ERROR'] = "1"
 
 
 def compute_metrics(p):
@@ -82,7 +82,7 @@ def train(cfg: DictConfig):
 
     tweets_df_train = torch.load(os.path.join(DATA_DIR, "train.pt"))
     tokenizer = transformers.DistilBertTokenizer.from_pretrained("distilbert-base-cased")
-    full_train_dataset = TwitterDataset(tweets_df_train, tokenizer, max_len=100)
+    full_train_dataset = TwitterDataset(tweets_df_train, tokenizer, max_len=120)
     val_size = int(len(tweets_df_train) * 0.2)
     train_size = len(tweets_df_train) - val_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
@@ -96,7 +96,7 @@ def train(cfg: DictConfig):
         compute_metrics=compute_metrics,
     )
 
-    data_cfg.data_version = next((tag for tag in repo.tags if tag.commit == repo.head.commit)).name
+    # data_cfg.data_version = next((tag for tag in repo.tags if tag.commit == repo.head.commit)).name
     logger.info(f"Using {training_args.n_gpu} GPUs for training")
     logger.info(f"Using data version: {data_cfg.data_version}")
     trainer.train()

@@ -18,10 +18,16 @@ class TwitterDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.tweets_df["clean_text"].iloc[idx]
+        location = self.tweets_df["location"].iloc[idx]
+        location = location if location != "NAN" else ""
+        keyword = self.tweets_df["keyword"].iloc[idx]
+        keyword = keyword if keyword != "NAN" else ""
         target = self.tweets_df["target"].iloc[idx]
-        encoding = self.tokenizer.encode_plus(
+        encoding = self.tokenizer(
             sample,
-            add_special_tokens=True,
+            location,
+            keyword,
+            # add_special_tokens=True,
             padding="max_length",
             max_length=self.max_len,
             truncation=True,
@@ -29,7 +35,7 @@ class TwitterDataset(Dataset):
             return_attention_mask=True,
             return_tensors="pt",
         )
-        return {"sample": sample,
+        return {"sample": sample + " " + location + " " + keyword,
                 "labels": target,
                 "input_ids": encoding["input_ids"].flatten(),
                 "attention_mask": encoding["attention_mask"].flatten(),
@@ -38,11 +44,11 @@ class TwitterDataset(Dataset):
 
 class TwitterDataModule(pl.LightningDataModule):
     def __init__(
-            self,
-            data_dir: str,
-            tokenizer: Any,
-            max_len: int = 100,
-            batch_size: int = 32,
+        self,
+        data_dir: str,
+        tokenizer: Any,
+        max_len: int = 100,
+        batch_size: int = 32,
     ):
         super().__init__()
         self.data_dir = data_dir
@@ -82,8 +88,8 @@ class TwitterDataModule(pl.LightningDataModule):
 
 
 if __name__ == "__main__":
-    data_dir = "/Users/max/Documents/Projects/dis_tweets/data/processed"
-    tokenizer = transformers.DistilBertTokenizer.from_pretrained("distilbert-base-cased")
-    tw_datamodule = TwitterDataModule(data_dir, tokenizer, max_len=100)
+    data_folder = "/Users/max/Documents/Projects/dis_tweets/data/processed"
+    tokenizer_test = transformers.DistilBertTokenizer.from_pretrained("distilbert-base-cased")
+    tw_datamodule = TwitterDataModule(data_folder, tokenizer_test, max_len=100)
     tw_datamodule.setup(stage="test")
     test_loader = tw_datamodule.test_dataloader()

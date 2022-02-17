@@ -14,6 +14,8 @@ from bs4 import BeautifulSoup
 import torch
 from src.util import get_root_path
 import os
+from typing import Optional, List
+import wordsegment
 
 
 class Preprocessor:
@@ -21,19 +23,20 @@ class Preprocessor:
         nltk.download('stopwords')
         nltk.download('wordnet')
         nltk.download('averaged_perceptron_tagger')
+        wordsegment.load()
         self.chat_words_list, self.chat_words_map_dict = CHAT_WORDS
 
-    def save(self, stage: str):
+    def save(self, stage: str, features: Optional[List[str]] = None):
         df = pd.read_csv(os.path.join(get_root_path(), "data", "raw", stage+".csv"))
         if stage == "train":
-            self._preprocess(df)
+            self._preprocess(df, features)
         elif stage == "test":
             self._preprocess_test(df)
         else:
             return
         torch.save(self.df_out, os.path.join(get_root_path(), "data", "processed", stage+".pt"))
 
-    def _preprocess(self, df: pd.DataFrame):
+    def _preprocess(self, df: pd.DataFrame, features: Optional[List[str]] = None) -> None:
         df_processed = pd.DataFrame()
         df_processed["target"] = df["target"]
         df_processed["clean_text"] = df["text"].str.lower()
@@ -61,8 +64,13 @@ class Preprocessor:
         df_processed["clean_text"] = df_processed["clean_text"].apply(
             lambda text: self.lem_words(text, lemmatizer, wordnet_map))
         self.df_out = df_processed[df_processed["clean_text"].map(len) > 0]
+        # add additional features
+        if features:
+            for feature in features:
+                print(f"Adding feature: {feature}")
+                self._add_feature(df, feature)
 
-    def _preprocess_test(self, df: pd.DataFrame):
+    def _preprocess_test(self, df: pd.DataFrame) -> None:
         df_processed = pd.DataFrame()
         df_processed["clean_text"] = df["text"].str.lower()
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_punctuation(text))
@@ -77,6 +85,16 @@ class Preprocessor:
         df_processed["clean_text"] = df_processed["clean_text"].apply(
             lambda text: self.lem_words(text, lemmatizer, wordnet_map))
         self.df_out = df_processed
+        self.df_out["id"] = df["id"] # for submission to Kaggle competition
+
+    def _add_feature(self, df: pd.DataFrame, feature: str) -> None:
+        df[feature].fillna("NAN", inplace=True)
+        df[feature].map(lambda x: self.remove_punctuation(x))
+        df[feature].map(lambda x: self.word_segmentation(x))
+        self.df_out[feature] = df[feature]
+
+    def word_segmentation(self, text: str) -> str:
+        return " ".join(wordsegment.segment(text))
 
     def remove_punctuation(self, text: str):
         return text.translate(str.maketrans('', '', string.punctuation))
@@ -153,4 +171,4 @@ class Preprocessor:
 
 if __name__ == "__main__":
     pre = Preprocessor()
-    pre.save("test")
+    pre.save("train", ["location", "keyword"])
