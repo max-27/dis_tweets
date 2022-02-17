@@ -15,6 +15,7 @@ scikit-learn~=1.0.2
 sklearn~=0.0
 transformers~=4.16.2
 torch~=1.10.2
+pytorch-lightning~=1.5.10
 src~=0.1.0
 nltk~=3.6.7
 bs4~=0.0.1
