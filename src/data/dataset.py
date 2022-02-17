@@ -19,9 +19,9 @@ class TwitterDataset(Dataset):
     def __getitem__(self, idx):
         sample = self.tweets_df["clean_text"].iloc[idx]
         location = self.tweets_df["location"].iloc[idx]
-        location = location if location != "NAN" else ""
+        location = location if location != "nan" else ""
         keyword = self.tweets_df["keyword"].iloc[idx]
-        keyword = keyword if keyword != "NAN" else ""
+        keyword = keyword if keyword != "nan" else ""
         target = self.tweets_df["target"].iloc[idx]
         encoding = self.tokenizer(
             sample,
