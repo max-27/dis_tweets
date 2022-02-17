@@ -1,4 +1,4 @@
-save_steps: 10
+save_steps: 500
 save_dir: ${now:%Y-%m-%d}/${now:%H-%M-%S}
 logging_steps: 500
 

@@ -1,5 +1,4 @@
 # reproducibility
-deterministic: False
 random_seed: 42
 
 # ???

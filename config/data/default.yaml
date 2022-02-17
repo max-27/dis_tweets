@@ -1,4 +1,4 @@
-data_version: Look in log file
+data_version: Not available
 batch_size:
   train: 32
   eval: 32
