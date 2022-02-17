@@ -1,8 +1,6 @@
 # local package
 -e .
 
---find-links https://download.pytorch.org/whl/cu113/torch_stable.html
-torch~=1.10.2
 
 # external requirements
 Sphinx
