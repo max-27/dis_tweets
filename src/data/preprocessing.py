@@ -17,6 +17,7 @@ import os
 from typing import Optional, List
 import wordsegment
 import spacy
+import numpy as np
 
 
 class Preprocessor:
@@ -24,19 +25,21 @@ class Preprocessor:
         nltk.download('stopwords')
         nltk.download('wordnet')
         nltk.download('averaged_perceptron_tagger')
+        nltk.download("words")
         wordsegment.load()
+        self.words = set(nltk.corpus.words.words())
         self.chat_words_list, self.chat_words_map_dict = CHAT_WORDS
 
     def run(self, stage: str, features: Optional[List[str]] = None):
-        df = pd.read_csv(os.path.join(get_root_path(), "data", "raw", stage+".csv"))
+        df = pd.read_csv(os.path.join(get_root_path(), "data", "raw", stage + ".csv"))
         if stage == "train":
             self._preprocess(df, features)
         elif stage == "test":
             self._preprocess_test(df, features)
         else:
             return
-        print(f"Saving dataframe to {os.path.join(get_root_path(), 'data', 'processed', stage+'.pt')}")
-        torch.save(self.df_out, os.path.join(get_root_path(), "data", "processed", stage+".pt"))
+        print(f"Saving dataframe to {os.path.join(get_root_path(), 'data', 'processed', stage + '.pt')}")
+        torch.save(self.df_out, os.path.join(get_root_path(), "data", "processed", stage + ".pt"))
 
     def _preprocess(self, df: pd.DataFrame, features: Optional[List[str]] = None) -> None:
         df_processed = pd.DataFrame()
@@ -49,7 +52,11 @@ class Preprocessor:
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoticons(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoji(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_special_characters(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.clean_sent(text))
+        # df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.word_segmentation(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_stopwords(text))
+        df_processed["len_text"] = df_processed["clean_text"].apply(lambda text: self.check_len_text(text))
+        df_processed.dropna(subset=["clean_text"], inplace=True)
         cnt = Counter()
         for text in df_processed["clean_text"].values:
             for word in text.split():
@@ -90,6 +97,8 @@ class Preprocessor:
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoticons(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_emoji(text))
         df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_special_characters(text))
+        df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.word_segmentation(text))
+        # df_processed["clean_text"] = df_processed["clean_text"].apply(lambda text: self.remove_stopwords(text))
         lemmatizer = WordNetLemmatizer()
         wordnet_map = {"N": wordnet.NOUN, "V": wordnet.VERB, "J": wordnet.ADJ, "R": wordnet.ADV}
         df_processed["clean_text"] = df_processed["clean_text"].apply(
@@ -111,6 +120,13 @@ class Preprocessor:
         df[feature] = df[feature].map(lambda x: self.remove_punctuation(x))
         df[feature] = df[feature].map(lambda x: self.word_segmentation(x))
         self.df_out[feature] = df[feature]
+
+    def check_len_text(self, text: str):
+        return text if len(nltk.word_tokenize(text)) > 1 else np.nan
+
+    def clean_sent(self, text: str) -> str:
+        return " ".join(w for w in nltk.wordpunct_tokenize(text)
+                        if (w.lower() in self.words or not w.isalpha()) and len(w) > 1)
 
     def word_segmentation(self, text: str) -> str:
         return " ".join(wordsegment.segment(text))
@@ -202,4 +218,4 @@ class Preprocessor:
 
 if __name__ == "__main__":
     pre = Preprocessor()
-    pre.run("test", features=["location", "keyword"])
+    pre.run("train", features=["location", "keyword"])
