@@ -75,21 +75,23 @@ def train(cfg: DictConfig):
         load_best_model_at_end=model_cfg.load_best_model,
         metric_for_best_model=model_cfg.metric_best_model,
     )
-    model = AutoModelForSequenceClassification.from_pretrained(
-        "distilbert-base-cased",
-        num_labels=model_cfg.num_classes,
-    )
+
+    def model_init():
+        return AutoModelForSequenceClassification.from_pretrained(
+            "distilbert-base-cased",
+            num_labels=model_cfg.num_classes,
+        )
 
     tweets_df_train = torch.load(os.path.join(DATA_DIR, "train.pt"))
     tokenizer = transformers.DistilBertTokenizer.from_pretrained("distilbert-base-cased")
     full_train_dataset = TwitterDataset(tweets_df_train, tokenizer, max_len=120)
-    val_size = int(len(tweets_df_train) * 0.2)
+    val_size = int(len(tweets_df_train) * 0.1)
     train_size = len(tweets_df_train) - val_size
     train_dataset, val_dataset = random_split(full_train_dataset, [train_size, val_size])
 
     os.environ['WANDB_WATCH'] = 'false'  # used in Trainer
     trainer = Trainer(
-        model=model,
+        model_init=model_init,
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
