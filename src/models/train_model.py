@@ -12,6 +12,7 @@ import wandb
 import hydra
 from omegaconf import DictConfig
 from git import Repo
+import random
 
 ROOT_DIR = get_root_path()
 DATA_DIR = os.path.join(ROOT_DIR, "data", "processed")
@@ -20,6 +21,14 @@ logger = logging.getLogger(__name__)
 wandb.login()
 repo = Repo(ROOT_DIR, search_parent_directories=True)
 os.environ['HYDRA_FULL_ERROR'] = "1"
+
+
+def fix_seeds(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(42)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def compute_metrics(p):
@@ -49,6 +58,8 @@ def train(cfg: DictConfig):
         group=logging_cfg.wandb.group,
         # config=omegaconf.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True),
     )
+
+    fix_seeds(train_cfg.random_seed)
 
     save_subdir = logging_cfg.save_dir.split("/")
     output_dir = os.path.join(MODEL_DIR, save_subdir[0], save_subdir[1])
